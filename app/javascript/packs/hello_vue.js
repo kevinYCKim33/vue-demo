@@ -9,7 +9,7 @@ import TurbolinksAdapter from 'vue-turbolinks' // node module he made??
 import VueResource from 'vue-resource' // a way to send ajax that is a bit easier...
 
 Vue.use(VueResource) //which will initialize all of that... // yarn add vue-turbolinks vue-resource
-
+Vue.use(TurbolinksAdapter) // https://stackoverflow.com/questions/46239040/error-vue-js-cannot-read-property-props-of-undefined
 document.addEventListener('turbolinks:load', () => {
   // what the heck??
   Vue.http.headers.common['X-CSRF-Token'] = document.querySelector('meta[name="csrf-token"]').getAttribute('content')
@@ -25,7 +25,6 @@ document.addEventListener('turbolinks:load', () => {
 
     var app = new Vue({
       el: element,
-      mixins: [TurbolinksAdapter],
       data: function() {
         return { id: id, team: team }
       },
