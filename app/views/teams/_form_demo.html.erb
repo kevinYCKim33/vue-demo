@@ -1,0 +1,10 @@
+<%= content_tag :div
+id: "team-form"
+data: {
+  team: team.to_json(includes: :players)
+  players_attributes: team.players.to_json,
+} do %>
+
+<% end %>
+
+<%# what we really need: #1 form to have that id, when editing a team, #2 have some json that vue can load so that it knows the initial state %>
