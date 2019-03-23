@@ -31,6 +31,8 @@ class TeamsController < ApplicationController
       if @team.save
         format.html { redirect_to @team, notice: 'Team was successfully created.' }
         format.json { render :show, status: :created, location: @team } #redirect back to the team once saved
+        # Response {url: "/teams", ok: true, status: 201, statusText: "Created", headers: Headers, …}
+
       else
         format.html { render :new }
         format.json { render json: @team.errors, status: :unprocessable_entity } #ajax going to receive a failed post and returns errors back
