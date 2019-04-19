@@ -1,0 +1,42 @@
+<%= content_tag :div,
+  id: "team-form",
+  data: {
+    id: team.id, # id is not an accepted parameter from the rails strong_params land...so just extract it out here and add an except :id in the next line
+    team: team.to_json(except: [:id, :created_at, :updated_at]), #where rails meets vue team = @team and team.json railsifically outputs the team's attributes in json form
+    players_attributes: team.players.to_json(except: [:team_id, :created_at, :updated_at]) #team has many players, and rails associations get beautifully brought out to the front end...
+  } do %>
+
+  <label>Team Name</label>
+  <input type="text" v-model="team.name">
+  <%# the team in team.name is the left side of return { team: team } %>
+  <%# the right side of team is from %>
+    <%# var team = JSON.parse(element.dataset.team) %>
+    <%# where element is the div...div.dataset.team is basically rails model getting shot up to the vue land %>
+
+  <h4>Players</h4>
+  <div v-for="(player, index) in team.players_attributes">
+    <div v-if="player._destroy == '1'"> <%# if remove flag is set... %>
+      {{ player.name }} will be removed. <button v-on:click="undoRemove(index)">Undo</button>
+    </div>
+    <div v-else> <%# remove flag is NOT set %>
+      <label>Player Name</label>
+      <input type="text" v-model="player.name">
+      <button v-on:click="removePlayer(index)">Remove</button>
+    </div>
+    <hr />
+  </div>
+
+  <button v-on:click="addPlayer">Add Player</button>
+
+  <br />
+
+  <button v-on:click="saveTeam">Save Team</button>
+
+
+<% end %>
+
+<%# what we really need: #1 form to have that id, when editing a team, #2 have some json that vue can load so that it knows the initial state %>
+<!-- <div id="team-form" data-team="{"id":null,"name":null}" data-players-attributes="[]"> -->
+  <!-- <label>Team Name</label> -->
+  <!-- <input type="text"> -->
+<!-- </div> -->
