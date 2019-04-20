@@ -10,10 +10,10 @@ class Team extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      id: props.id,
+      // id: props.id,
       team: props.team
     }
-    this.handleNameChange = this.handleNameChange.bind(this);
+    // this.handleNameChange = this.handleNameChange.bind(this);
     // this.handlePlayerNameChange = this.handlePlayerNameChange.bind(this);
     // https://stackoverflow.com/questions/30148827/this-is-undefined-inside-map-function-reactjs
   }
@@ -41,14 +41,80 @@ class Team extends Component {
     this.setState({ team })
   }
 
+  removePlayer = (index) => {
+    var team = {...this.state.team };
+    var player = team.players_attributes[index];
+
+    if (player.id == null) {
+      team.players_attributes.splice(index, 1);
+    } else {
+      player._destroy = 1;
+    }
+    this.setState({team})
+  }
+
+  undoRemovePlayer = (index) => {
+    var team = {...this.state.team };
+    var player = team.players_attributes[index];
+    player._destroy = null;
+    this.setState({team});
+  }
+
+  saveTeam = () => {
+    var teamJSON = this.state.team;
+
+    if (this.props.id == null) {
+      const csrf = document.querySelector("meta[name='csrf-token']").getAttribute("content");
+      return fetch(`/teams.json`, {
+        method: 'POST',
+        headers: {
+          'X-CSRF-Token': csrf,
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({team: teamJSON})
+      }).then(response => {
+        return response.json();
+      }).then(data => {
+        Turbolinks.visit(`/teams/${data.id}`);
+      })
+
+    } else {
+      const csrf = document.querySelector("meta[name='csrf-token']").getAttribute("content");
+      return fetch(`/teams/${this.props.id}.json`, {
+        method: 'PUT',
+        headers: {
+          'X-CSRF-Token': csrf,
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({team: teamJSON})
+      }).then(response => {
+        return response.json();
+      }).then(data => {
+        Turbolinks.visit(`/teams/${data.id}`);
+      })
+    }
+  }
+
   render() {
     var players = this.state.team.players_attributes;
     var playersComponent = players.map((player, index) => {
       return (
         <div key={index}>
-          <label>Player Name</label>
-          <input type="text"  value={player.name} onChange={(e) => this.handlePlayerNameChange(index) }/>
-          <button>Remove</button>
+        { player._destroy != 1 &&
+          <div>
+            <label>Player Name</label>
+            <input type="text"  value={player.name} onChange={(e) => this.handlePlayerNameChange(index) }/>
+            <button onClick={(e) => this.removePlayer(index) }>Remove</button>
+          </div>
+        }
+        { player._destroy == 1 &&
+          <div>
+            {player.name} will be removed.
+            <button onClick={(e) => this.undoRemovePlayer(index) }> Undo </button>
+          </div>
+        }
         </div>
       )
     })
@@ -61,22 +127,21 @@ class Team extends Component {
 
         { playersComponent }
 
-
         <button onClick={this.addPlayer}>Add Player</button>
 
         <br />
 
-        <button>Save Team</button>
+        <button onClick={this.saveTeam}>Save Team</button>
 
       </div>
     )
   }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('turbolinks:load', () => {
   var element = document.getElementById("team-form");
 
-  // if #team-form exists, invoke Vue microApp
+  // if #team-form exists, invoke React microApp
   if (element != null) {
     var id = element.dataset.id; // added due to strong params; match to rails strong params
     // when the page is loaded, the json of the rails object is already inside the #team-form div
